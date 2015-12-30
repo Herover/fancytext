@@ -98,9 +98,8 @@ end
 PANEL = {}
 function PANEL:Init()
 
-	local wide, tall = surface.GetTextSize( " " )
-	self.sepwide = wide
-	self.chartall = tall
+	self.sepwide = 8	-- We cant run surface.GetTextSize if the panel is made too early
+	self.chartall = 8
 	timer.Simple(0.5, function()	
 		local wide, tall = surface.GetTextSize( " " )
 		self.sepwide = wide
@@ -110,6 +109,8 @@ function PANEL:Init()
 	self.lines = {{}}
 	self.curwide = 0
 	self.margin = 5
+	
+	self.fontInternal = false
 	
 	self.scroll = 0
 	
@@ -126,9 +127,12 @@ function PANEL:Init()
 	self.pnlCanvas.Paint = function()
 		local line = 1 
 		local color = Color(255, 255, 255, 255)
-		local font = "ChatFont"
+		local font = me.fontInternal or "ChatFont"
 		local liney = 0
 		local last_item = false
+		if font then
+			surface.SetFont( font )
+		end
 		local spacer, ctall = surface.GetTextSize( " " )
 		me.chartall = ctall
 		for l_n,l_v in pairs(me.lines) do 
@@ -142,7 +146,7 @@ function PANEL:Init()
 					if last_item[1] == "text" then
 						lastx = lastx + spacer
 					end
-					draw.SimpleText(i_v[2].text, font, lastx, l_n*h, color)
+					draw.SimpleTextOutlined(i_v[2].text, font, lastx, l_n*h, color, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM, 1, Color(0,0,0))
 				elseif i_v[1] == "image" then
 					w = i_v[2].w
 					h = i_v[2].h
@@ -308,6 +312,7 @@ end
 function PANEL:SetFontInternal( font )
 
 	self:InsertFontChange( font )
+	self.fontInternal = font
 
 end
 
