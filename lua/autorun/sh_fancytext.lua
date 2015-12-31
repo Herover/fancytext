@@ -98,12 +98,13 @@ end
 PANEL = {}
 function PANEL:Init()
 
-	self.sepwide = 8	-- We cant run surface.GetTextSize if the panel is made too early
-	self.chartall = 8
+	self.sepwide = 18	-- We cant run surface.GetTextSize if the panel is made too early
+	self.chartall = 18
 	timer.Simple(0.5, function()	
 		local wide, tall = surface.GetTextSize( " " )
 		self.sepwide = wide
 		self.chartall = tall
+		print("I PUT WIDE TO", self.sepwide, self)
 	end)
 	print("INIT",self.chartall)
 	self.lines = {{}}
@@ -111,6 +112,7 @@ function PANEL:Init()
 	self.margin = 5
 	
 	self.fontInternal = false
+	self.font = "ChatFont" --default font
 	
 	self.scroll = 0
 	
@@ -127,13 +129,14 @@ function PANEL:Init()
 	self.pnlCanvas.Paint = function()
 		local line = 1 
 		local color = Color(255, 255, 255, 255)
-		local font = me.fontInternal or "ChatFont"
+		local font = me.fontInternal or self.font
 		local liney = 0
 		local last_item = false
 		if font then
 			surface.SetFont( font )
 		end
 		local spacer, ctall = surface.GetTextSize( " " )
+		me.sepwide = spacer
 		me.chartall = ctall
 		for l_n,l_v in pairs(me.lines) do 
 			local lastx = 0
@@ -144,7 +147,7 @@ function PANEL:Init()
 					w = i_v[2].w
 					h = i_v[2].h
 					if last_item[1] == "text" then
-						lastx = lastx + spacer
+						--lastx = lastx + spacer
 					end
 					draw.SimpleTextOutlined(i_v[2].text, font, lastx, l_n*h, color, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM, 1, Color(0,0,0))
 				elseif i_v[1] == "image" then
@@ -158,11 +161,16 @@ function PANEL:Init()
 					w = 0
 					h = 0
 				elseif i_v[1] == "font" then
-					spacer, _ = surface.GetTextSize( " " )
+					spacer, ctall = surface.GetTextSize( " " )
+					me.sepwide = spacer
+					me.chartall = ctall
 					font = i_v[2]
 					w = 0
 					h = 0
 				elseif i_v[1] == "blank" then
+					w = i_v[2].w
+					h = i_v[2].h
+				elseif i_v[1] == "panel" then
 					w = i_v[2].w
 					h = i_v[2].h
 					i_v[2].panel:SetPos( lastx, liney + i_v[2].h )
@@ -319,8 +327,9 @@ end
 function PANEL:AppendItem( item )
 	
 	local wide = item[2].w
+	--print("sepwide",self.sepwide)
 	--print("word",part,self.curwide, self.sepwide, wide, "<", self:GetWide(),self)
-	if self.curwide + self.sepwide + wide < self:GetWide() - self.margin*2 then
+	if self.curwide + wide < self:GetWide() - self.margin*2 then
 		--If above passes, theres enough room to add another word
 		self.curwide = self.curwide + wide
 		table.insert( self.lines[#self.lines], item )
@@ -338,6 +347,11 @@ function PANEL:AppendText( text )
 	
 	local etext = string.Explode("\n", text) --Split newlines in sections
 
+	if self.fontInternal then
+		surface.SetFont( self.fontInternal )
+	else
+		surface.SetFont( self.font )
+	end
 	for l,line in pairs(etext) do --Loop lines
 		--print("line",line)
 		local parts = string.Explode(" ", line) --Split spaces, perhaps find another way to split seperators
@@ -345,6 +359,7 @@ function PANEL:AppendText( text )
 			local wide, tall = surface.GetTextSize( part )
 			if part != "" and part != " " then --I dont know why this is possible
 				self:AppendItem( {"text", {text = part, w = wide, h = tall}} )
+				self:AppendItem( {"blank", {w = 4, h = tall}} )
 			end
 		end
 		if l != #etext then --Begin new line, except if it's the last line
@@ -354,6 +369,8 @@ function PANEL:AppendText( text )
 	end
 	
 	self:_PerformLayout()
+	
+	print( text )
 	
 end
 
@@ -369,7 +386,7 @@ function PANEL:AppendFunc( fn )
 	local info = fn(self.chartall)
 	info.panel:SetParent( self.pnlCanvas )
 	self.pnlCanvas:Add( info.panel )
-	self:AppendItem( {"blank", info} )
+	self:AppendItem( {"panel", info} )
 	print("fn", info)
 end
 
