@@ -3,6 +3,8 @@ Goal of this project is to provide a replacement for Garry's Mod RichText vgui p
 
 Final goal is to make it possible to only change vgui.Create("RichText") to vgui.Create("FancyText") without editing anything else.
 
+[A quick how-to use can be found on the wiki](https://github.com/Herover/fancytext/wiki).
+
 ## What implemented
 From [the gmod wiki](http://wiki.garrysmod.com/page/Category:RichText) (strike means not implemented yet, italic means partially/not as RichText):
 * AppendText
