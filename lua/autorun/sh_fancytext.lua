@@ -139,6 +139,10 @@ function PANEL:Init()
 		me.sepwide = spacer
 		me.chartall = ctall
 		for l_n,l_v in pairs(me.lines) do 
+			if self.VBar:GetScroll() - self.pnlCanvas:GetTall() > liney * me.chartall then
+				print("badspot")
+				continue
+			end
 			local lastx = 0
 			local h = 0
 			local w = 0
@@ -146,7 +150,7 @@ function PANEL:Init()
 				if i_v[1] == "text" then
 					w = i_v[2].w
 					h = i_v[2].h
-					if last_item[1] == "text" then
+					if last_item and last_item[1] == "text" then
 						--lastx = lastx + spacer
 					end
 					draw.SimpleTextOutlined(i_v[2].text, font, lastx, l_n*h, color, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM, 1, Color(0,0,0))
@@ -325,7 +329,10 @@ function PANEL:SetFontInternal( font )
 end
 
 function PANEL:AppendItem( item )
-	
+	if #self.lines > 100 then
+		--print("REMOVING")
+		table.remove( self.lines, 1 )
+	end
 	local wide = item[2].w
 	--print("sepwide",self.sepwide)
 	--print("word",part,self.curwide, self.sepwide, wide, "<", self:GetWide(),self)
