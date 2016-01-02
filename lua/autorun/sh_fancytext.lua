@@ -184,7 +184,7 @@ function PANEL:Init()
 	end
 	
 	-- Create the scroll bar
-	self.VBar = vgui.Create( "DVScrollBar", self )
+	self.VBar = vgui.Create( "DVScrollBar2", self )
 	self.VBar:Dock( RIGHT )
 	
 end
