@@ -108,6 +108,7 @@ function PANEL:Init()
 	end)
 	print("INIT",self.chartall)
 	self.lines = {{}}
+	self.maxlines = false
 	self.curwide = 0
 	self.margin = 5
 	
@@ -139,48 +140,51 @@ function PANEL:Init()
 		me.sepwide = spacer
 		me.chartall = ctall
 		for l_n,l_v in pairs(me.lines) do 
-			if self.VBar:GetScroll() - self.pnlCanvas:GetTall() > liney * me.chartall then
-				print("badspot")
-				continue
-			end
 			local lastx = 0
-			local h = 0
-			local w = 0
-			for i_n, i_v in pairs(l_v) do
-				if i_v[1] == "text" then
-					w = i_v[2].w
-					h = i_v[2].h
-					if last_item and last_item[1] == "text" then
-						--lastx = lastx + spacer
+			if liney + me.chartall > self.VBar:GetScroll() --[[- self:GetTall()]] then
+				local h = 0
+				local w = 0
+				for i_n, i_v in pairs(l_v) do
+					if i_v[1] == "text" then
+						w = i_v[2].w
+						h = i_v[2].h
+						if last_item and last_item[1] == "text" then
+							--lastx = lastx + spacer
+						end
+						draw.SimpleTextOutlined(i_v[2].text, font, lastx, l_n*h, color, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM, 1, Color(0,0,0))
+					elseif i_v[1] == "image" then
+						w = i_v[2].w
+						h = i_v[2].h
+						surface.SetMaterial( i_v[2].mat )
+						surface.SetDrawColor(255,255,255,255)
+						surface.DrawTexturedRect( lastx, liney + i_v[2].h, i_v[2].w, i_v[2].h )
+					elseif i_v[1] == "textcolor" then
+						color = i_v[2]
+						w = 0
+						h = 0
+					elseif i_v[1] == "font" then
+						spacer, ctall = surface.GetTextSize( " " )
+						me.sepwide = spacer
+						me.chartall = ctall
+						font = i_v[2]
+						w = 0
+						h = 0
+					elseif i_v[1] == "blank" then
+						w = i_v[2].w
+						h = i_v[2].h
+					elseif i_v[1] == "panel" then
+						w = i_v[2].w
+						h = i_v[2].h
+						i_v[2].panel:SetPos( lastx, liney + i_v[2].h )
+						i_v[2].panel:SetVisible( true )
 					end
-					draw.SimpleTextOutlined(i_v[2].text, font, lastx, l_n*h, color, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM, 1, Color(0,0,0))
-				elseif i_v[1] == "image" then
-					w = i_v[2].w
-					h = i_v[2].h
-					surface.SetMaterial( i_v[2].mat )
-					surface.SetDrawColor(255,255,255,255)
-					surface.DrawTexturedRect( lastx, liney + i_v[2].h, i_v[2].w, i_v[2].h )
-				elseif i_v[1] == "textcolor" then
-					color = i_v[2]
-					w = 0
-					h = 0
-				elseif i_v[1] == "font" then
-					spacer, ctall = surface.GetTextSize( " " )
-					me.sepwide = spacer
-					me.chartall = ctall
-					font = i_v[2]
-					w = 0
-					h = 0
-				elseif i_v[1] == "blank" then
-					w = i_v[2].w
-					h = i_v[2].h
-				elseif i_v[1] == "panel" then
-					w = i_v[2].w
-					h = i_v[2].h
-					i_v[2].panel:SetPos( lastx, liney + i_v[2].h )
+					lastx = lastx + w
+					last_item = i_v
 				end
-				lastx = lastx + w
-				last_item = i_v
+			else
+				for i_n, i_v in pairs(l_v) do
+					if i_v[1] == "panel" then i_v[2].panel:SetVisible( false ) end
+				end
 			end
 			--liney = liney + h
 			liney = liney + me.chartall
@@ -329,7 +333,7 @@ function PANEL:SetFontInternal( font )
 end
 
 function PANEL:AppendItem( item )
-	if #self.lines > 100 then
+	if self.maxlines and #self.lines > self.maxlines then
 		--print("REMOVING")
 		table.remove( self.lines, 1 )
 	end
