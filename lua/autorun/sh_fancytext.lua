@@ -141,7 +141,7 @@ function PANEL:Init()
 		me.chartall = ctall
 		for l_n,l_v in pairs(me.lines) do 
 			local lastx = 0
-			if liney + me.chartall > self.VBar:GetScroll() --[[- self:GetTall()]] then
+			if liney + 2*me.chartall > me.VBar:GetScroll() and liney + 2*me.chartall < me.VBar:GetScroll() + me:GetTall() + me.chartall then
 				local h = 0
 				local w = 0
 				for i_n, i_v in pairs(l_v) do
