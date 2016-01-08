@@ -151,7 +151,7 @@ function PANEL:Init()
 						if last_item and last_item[1] == "text" then
 							--lastx = lastx + spacer
 						end
-						draw.SimpleTextOutlined(i_v[2].text, font, lastx, l_n*h, color, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM, 1, Color(0,0,0))
+						self:PaintTextpart( i_v[2].text, font, lastx, l_n*h, color )
 					elseif i_v[1] == "image" then
 						w = i_v[2].w
 						h = i_v[2].h
@@ -424,6 +424,11 @@ end
 
 function PANEL:Paint( w, h )
 	
+end
+
+function PANEL:PaintTextpart( text, font, x, y, colour )
+	--draw.SimpleTextOutlined(text, font, x, y, colour, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM, 1, Color(0,0,0))
+	draw.SimpleText(text, font, x, y, colour)
 end
 
 vgui.Register('DFancyText', PANEL)
