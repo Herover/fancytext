@@ -183,7 +183,16 @@ function PANEL:Init()
 				end
 			else
 				for i_n, i_v in pairs(l_v) do
-					if i_v[1] == "panel" then i_v[2].panel:SetVisible( false ) end
+					if i_v[1] == "panel" then 
+						i_v[2].panel:SetVisible( false )
+					elseif i_v[1] == "font" then
+						spacer, ctall = surface.GetTextSize( " " )
+						me.sepwide = spacer
+						me.chartall = ctall
+						font = i_v[2]
+					elseif i_v[1] == "textcolor" then
+						color = i_v[2]
+					end
 				end
 			end
 			--liney = liney + h
