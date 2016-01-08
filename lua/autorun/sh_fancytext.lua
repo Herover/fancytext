@@ -192,7 +192,7 @@ function PANEL:Init()
 	end
 	
 	-- Create the scroll bar
-	self.VBar = vgui.Create( "DVScrollBar2", self )
+	self.VBar = vgui.Create( "DVScrollBar", self )
 	self.VBar:Dock( RIGHT )
 	
 end
@@ -257,7 +257,8 @@ end
 function PANEL:_PerformLayout()
 
 	self.scroll = self.VBar:GetScroll()
-
+	local vbarvisible = self.VBar:IsVisible()
+	
 	if self.PerformLayout then
 		self:PerformLayout()
 	end
@@ -280,6 +281,7 @@ function PANEL:_PerformLayout()
 	--self:Rebuild()
 	
 	self.VBar:SetScroll( self.scroll )
+	self.VBar:SetVisible( vbarvisible )
 
 
 end
@@ -316,13 +318,14 @@ end
 
 function PANEL:SetVerticalScrollbarEnabled( bool )
 	
-	if !bool then
-		self.scroll = self.VBar:GetScroll()
-	end
-	self.VBar:SetEnabled( bool )
-	if bool then
-		self.VBar:SetScroll( self.scroll )
-	end
+	--if !bool then
+	--	self.scroll = self.VBar:GetScroll()
+	--end
+	--self.VBar:SetEnabled( bool )
+	self.VBar:SetVisible( bool )
+	--if bool then
+	--	self.VBar:SetScroll( self.scroll )
+	--end
 end
 
 function PANEL:SetFontInternal( font )
