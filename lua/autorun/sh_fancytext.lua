@@ -12,12 +12,13 @@ fText = {}
 
 function fText.demo()
 	fText.frame = vgui.Create("DFrame")
-	fText.frame:SetSize( 800, 300 )
+	fText.frame:SetSize( 800, 310 )
 	fText.frame:SetTitle( "Demo" )
 	fText.frame:SetPos( ScrW()/2 - 200, ScrH()/2 - 150 )
 	
 	local fbox = vgui.Create("DFancyText", fText.frame)
 	fbox:SetSize( 400, 300 )
+	fbox:SetPos( 0, 10 )
 	fbox:SetFontInternal( "ChatFont" )
 	fbox:AppendText("Hello my name is Tom im 30 years old and I like to roll in the grass every saturday morning before breakfast.")
 	fbox:AppendText("Hej mit navn er Tom jeg er 30 år gammel og kan godt lide at rulle i græsset hver lørdag morgen før morgenmad.")
@@ -59,7 +60,7 @@ function fText.demo()
 	
 	local rbox = vgui.Create("RichText", fText.frame)
 	rbox:SetSize( 400, 300 )
-	rbox:SetPos( 400, 0 )
+	rbox:SetPos( 400, 10 )
 	rbox:SetFontInternal( "ChatFont" )
 	rbox:AppendText("Hello my name is Tom im 30 years old and I like to roll in the grass every saturday morning before breakfast.")
 	rbox:AppendText("Hej mit navn er Tom jeg er 30 år gammel og kan godt lide at rulle i græsset hver lørdag morgen før morgenmad.")
@@ -128,7 +129,6 @@ function PANEL:Init()
 	end
 	local me = self
 	self.pnlCanvas.Paint = function()
-		local line = 1 
 		local color = Color(255, 255, 255, 255)
 		local font = me.fontInternal or self.font
 		local liney = 0
@@ -139,12 +139,14 @@ function PANEL:Init()
 		local spacer, ctall = surface.GetTextSize( " " )
 		me.sepwide = spacer
 		me.chartall = ctall
-		for l_n,l_v in pairs(me.lines) do 
+		for l_n=1, #me.lines do
+			l_v = me.lines[l_n]
 			local lastx = 0
 			if liney + 2*me.chartall > me.VBar:GetScroll() and liney + 2*me.chartall < me.VBar:GetScroll() + me:GetTall() + me.chartall then
 				local h = 0
 				local w = 0
-				for i_n, i_v in pairs(l_v) do
+				for i_n=1, #l_v do
+					i_v = l_v[i_n]
 					if i_v[1] == "text" then
 						w = i_v[2].w
 						h = i_v[2].h
@@ -182,7 +184,8 @@ function PANEL:Init()
 					last_item = i_v
 				end
 			else
-				for i_n, i_v in pairs(l_v) do
+				for i_n=1, #l_v do
+					i_v = l_v[i_n]
 					if i_v[1] == "panel" then 
 						i_v[2].panel:SetVisible( false )
 					elseif i_v[1] == "font" then
@@ -428,7 +431,11 @@ end
 
 function PANEL:PaintTextpart( text, font, x, y, colour )
 	--draw.SimpleTextOutlined(text, font, x, y, colour, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM, 1, Color(0,0,0))
-	draw.SimpleText(text, font, x, y, colour)
+	--draw.SimpleText(text, font, x, y, colour)
+	surface.SetFont( font )
+	surface.SetTextPos( x, y )
+	surface.SetTextColor( colour )
+	surface.DrawText( text )
 end
 
 vgui.Register('DFancyText', PANEL)
