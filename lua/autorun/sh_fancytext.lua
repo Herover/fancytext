@@ -108,10 +108,12 @@ function PANEL:Init()
 		print("I PUT WIDE TO", self.sepwide, self)
 	end)
 	print("INIT",self.chartall)
-	self.lines = {{}}
+	self.lines = {}
 	self.maxlines = false
 	self.curwide = 0
 	self.margin = 5
+  
+  self.maxwide = 0 --Max known curwide used
 	
 	self.fontInternal = false
 	self.font = "ChatFont" --default font
@@ -122,7 +124,7 @@ function PANEL:Init()
 	--self.pnlCanvas.OnMousePressed = function( self, code ) self:GetParent():OnMousePressed( code ) end
 	self.pnlCanvas:SetMouseInputEnabled( true )
 	self.pnlCanvas.PerformLayout = function( pnl )
-	
+	self.pnlCanvas.OnMouseReleased = self.OnMouseReleased -- Inner element seems to block parent, bubble!
 		self:_PerformLayout()
 		self:InvalidateParent()
 	
@@ -131,7 +133,6 @@ function PANEL:Init()
 	self.pnlCanvas.Paint = function()
 		local color = Color(255, 255, 255, 255)
 		local font = me.fontInternal or self.font
-		local liney = 0
 		local last_item = false
 		if font then
 			surface.SetFont( font )
@@ -139,6 +140,7 @@ function PANEL:Init()
 		local spacer, ctall = surface.GetTextSize( " " )
 		me.sepwide = spacer
 		me.chartall = ctall
+		local liney = -ctall
 		for l_n=1, #me.lines do
 			l_v = me.lines[l_n]
 			local lastx = 0
@@ -153,7 +155,7 @@ function PANEL:Init()
 						if last_item and last_item[1] == "text" then
 							--lastx = lastx + spacer
 						end
-						self:PaintTextpart( i_v[2].text, font, lastx, l_n*h, color )
+						self:PaintTextpart( i_v[2].text, font, lastx, liney + ctall, color )
 					elseif i_v[1] == "image" then
 						w = i_v[2].w
 						h = i_v[2].h
@@ -248,6 +250,15 @@ function PANEL:InnerWidth()
 
 end
 
+function PANEL:GetContentWide()
+  return self.maxwide
+end
+
+function PANEL:SetW(w)
+  self:SetWide(w)
+  self:GetCanvas():SetWide(w)
+end
+
 --[[---------------------------------------------------------
    Name: Rebuild
 -----------------------------------------------------------]]
@@ -285,7 +296,7 @@ function PANEL:_PerformLayout()
 	self.VBar:SetUp( self:GetTall(), self.pnlCanvas:GetTall() )
 	YPos = self.VBar:GetOffset()
 		
-	if ( self.VBar.Enabled ) then Wide = Wide - self.VBar:GetWide() end
+	--if ( self.VBar.Enabled ) then Wide = Wide - self.VBar:GetWide() end
 
 	self.pnlCanvas:SetPos( 0, self.scroll )
 	self.pnlCanvas:SetWide( Wide )
@@ -294,6 +305,7 @@ function PANEL:_PerformLayout()
 	
 	self.VBar:SetScroll( self.scroll )
 	self.VBar:SetVisible( vbarvisible )
+	--self.VBar:SetEnabled( vbarvisible )
 
 
 end
@@ -333,7 +345,7 @@ function PANEL:SetVerticalScrollbarEnabled( bool )
 	--if !bool then
 	--	self.scroll = self.VBar:GetScroll()
 	--end
-	--self.VBar:SetEnabled( bool )
+	self.VBar:SetEnabled( bool )
 	self.VBar:SetVisible( bool )
 	--if bool then
 	--	self.VBar:SetScroll( self.scroll )
@@ -348,6 +360,9 @@ function PANEL:SetFontInternal( font )
 end
 
 function PANEL:AppendItem( item )
+  if type(item) == "string" then
+    return self:AppendText( item )
+  end
 	if self.maxlines and #self.lines > self.maxlines then
 		--print("REMOVING")
 		table.remove( self.lines, 1 )
@@ -359,14 +374,18 @@ function PANEL:AppendItem( item )
 		--If above passes, theres enough room to add another word
 		self.curwide = self.curwide + wide
 		table.insert( self.lines[#self.lines], item )
+    self.maxwide = math.max(self.curwide, self.maxwide)
 	else
 		--Otherwise add another line before inserting part
 		--print("newline", part)
-		self.lines[#self.lines + 1] = {}
+    table.insert(self.lines, {})
+    self.maxwide = math.max(self.curwide, self.maxwide)
 		self.curwide = wide
 		table.insert( self.lines[#self.lines], item )
 	end
 	
+	self:_PerformLayout()
+  
 end
 
 function PANEL:AppendText( text )
@@ -389,10 +408,13 @@ function PANEL:AppendText( text )
 			end
 		end
 		if l != #etext then --Begin new line, except if it's the last line
+      self.maxwide = math.max(self.curwide, self.maxwide)
 			self.lines[#self.lines + 1] = {}
 			self.curwide = 0
 		end
 	end
+  
+  self.maxwide = math.max(self.curwide, self.maxwide)
 	
 	self:_PerformLayout()
 	
@@ -417,10 +439,16 @@ function PANEL:AppendFunc( fn )
 end
 
 function PANEL:InsertColorChange( r, g, b, a )
+  if #self.lines == 0 then
+    table.insert(self.lines, {})
+  end
 	table.insert(self.lines[#self.lines], {"textcolor", Color(r, g, b, a)})
 end
 
 function PANEL:InsertFontChange( font )
+  if #self.lines == 0 then
+    table.insert(self.lines, {})
+  end
 	table.insert(self.lines[#self.lines], {"font", font})
 	surface.SetFont( font ) --Fixme: Needed to calc following text widths, causes side effects!
 end
@@ -436,6 +464,10 @@ function PANEL:PaintTextpart( text, font, x, y, colour )
 	surface.SetTextPos( x, y )
 	surface.SetTextColor( colour )
 	surface.DrawText( text )
+end
+
+function PANEL:OnMouseReleased()
+  
 end
 
 vgui.Register('DFancyText', PANEL)
