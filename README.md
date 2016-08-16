@@ -1,7 +1,7 @@
 # fancytext
 Goal of this project is to provide a replacement for Garry's Mod RichText vgui panel which supports more scriptability and non-text elements (images etc.).
 
-Final goal is to make it possible to only change vgui.Create("RichText") to vgui.Create("FancyText") without editing anything else.
+Final goal is to make it possible to only change vgui.Create("RichText") to vgui.Create("DFancyText") without editing anything else.
 
 [A quick how-to use can be found on the wiki](https://github.com/Herover/fancytext/wiki).
 
