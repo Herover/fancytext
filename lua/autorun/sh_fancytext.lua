@@ -399,7 +399,7 @@ function PANEL:AppendText( text )
 	end
 	for l,line in pairs(etext) do --Loop lines
 		--print("line",line)
-		local parts = string.Explode(" ", line) --Split spaces, perhaps find another way to split seperators
+		local parts = string.Explode(" ", language.GetPhrase( line ) ) --Split spaces, perhaps find another way to split seperators
 		for n,part in pairs(parts) do
 			local wide, tall = surface.GetTextSize( part )
 			if part != "" and part != " " then --I dont know why this is possible
